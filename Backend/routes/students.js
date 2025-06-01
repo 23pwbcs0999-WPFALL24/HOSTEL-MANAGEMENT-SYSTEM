@@ -1,9 +1,24 @@
+// import express from "express";
+// import { createStudent, getUnallocatedStudents, getAllStudents } from "../controllers/studentController.js";
+
+// const router = express.Router();
+
+// router.get("/", getAllStudents);
+// router.get("/unallocated", getUnallocatedStudents);
+// router.post("/", createStudent);
+
+// export default router;
 import express from "express";
-import {createStudent, getUnallocatedStudents} from "../controllers/studentController.js";
+import {
+  createStudent,
+  getUnallocatedStudents,
+  getAllStudents,
+} from "../controllers/studentController.js";
 
 const router = express.Router();
 
-router.post('/', createStudent);
-router.get('/unallocated', getUnallocatedStudents);
+router.get("/", getAllStudents);
+router.get("/unallocated", getUnallocatedStudents);
+router.post("/", createStudent);
 
 export default router;

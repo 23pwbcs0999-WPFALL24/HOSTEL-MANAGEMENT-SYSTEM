@@ -1,6 +1,6 @@
 const API_BASE = 'http://localhost:5000'; // Backend server URL
 
-// Helper to handle fetch and parse JSON with error handling
+// Universal fetch helper with JSON parsing and error handling
 async function fetchJson(url, options = {}) {
   const response = await fetch(API_BASE + url, options);
   if (!response.ok) {

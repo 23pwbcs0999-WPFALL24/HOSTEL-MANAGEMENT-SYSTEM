@@ -1,60 +1,83 @@
-import  allocation from "../models/allocation.js"
-import  student from "../models/student.js"
-import room from "../models/room.js";
+import { Allocation, Student, Room } from "../models/relations.js";
 
 const allocateRoom = async (req, res) => {
-    try {
-        const { student_id, room_id, allocation_date} = req.body;
+  try {
+    const { student_id, room_id, allocation_date } = req.body;
 
-        //checking for all the required fields
-        if(!student_id || !room_id || !allocation_date){
-            console.error("Missing required fields");
-            return res.status(400).json({ error: "All fields are required"});
-        }
-
-        //checking if the student has already been allocated a room
-        const existingAllocation = await allocation.findOne({ where: {student_id}});
-        if(existingAllocation){
-            console.error("Student has already been allocated a room");
-            return res.status(400).json({ error: "Student has already been allocated a room"});
-        }
-
-        // checking if rooms exists and has capacity
-        const roomExists = await room.findOne({ where: {room_id}});
-        if(!roomExists){
-            console.error("Room does nor exists with Id: ", room_id);
-            return res.status(400).json({ error: "Room not found"});
-        }
-
-        if(roomExists.current_occupancy >= roomExists.max_capacity){
-            console.error(`Room with Id: ${room_id} is full`);
-            return res.status(400).json({ error: "Room is full" });
-        }
-
-        // create new allocation
-        const newAllocation = await allocation.create({
-            student_id,
-            room_id,
-            allocation_date
-        });
-
-        //update room occupancy
-        await room.update(
-            {current_occupancy: room.current_occupancy + 1},
-            {where: {room_id}}
-        );
-
-        console.log(`Room ${room_id} allocated to student ${student_id} on date ${allocation_date}`);
-        return res.status(200).json(
-            {
-                message: "Room allocated successfully",
-                allocation: newAllocation
-            }
-        );
-    } catch (error) {
-        console.error("Error allocating room: ", error.message);
-        return res.status(500).json({message: "Internal server error"});
+    if (!student_id || !room_id || !allocation_date) {
+      return res.status(400).json({ error: "All fields are required" });
     }
+
+    // Find student by ID
+    let student = await Student.findByPk(student_id);
+
+    if (!student) {
+      return res.status(400).json({ error: "Student not found" });
+    }
+
+    // Check if student already has a room
+    const existingAllocation = await Allocation.findOne({
+      where: { student_id: student.student_id }
+    });
+    if (existingAllocation) {
+      return res.status(400).json({ error: "Student has already been allocated a room" });
+    }
+
+    // Check room availability
+    const room = await Room.findByPk(room_id);
+    if (!room) {
+      return res.status(400).json({ error: "Room not found" });
+    }
+
+    if (room.current_occupancy >= room.max_capacity) {
+      return res.status(400).json({ error: "Room is full" });
+    }
+
+    // Create allocation
+    const newAllocation = await Allocation.create({
+      student_id: student.student_id,
+      room_id,
+      allocation_date
+    });
+
+    // Update occupancy
+    await Room.update(
+      { current_occupancy: room.current_occupancy + 1 },
+      { where: { room_id } }
+    );
+
+    return res.status(200).json({
+      message: "Room allocated successfully",
+      allocation: newAllocation,
+      student
+    });
+
+  } catch (error) {
+    console.error("Error allocating room:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
-export default allocateRoom;
+const getAllocations = async (req, res) => {
+  try {
+    const allocations = await Allocation.findAll({
+      include: [
+        {
+          model: Student,
+          attributes: ['student_id', 'student_name']
+        },
+        {
+          model: Room,
+          attributes: ['room_id', 'max_capacity', 'current_occupancy']
+        }
+      ]
+    });
+
+    return res.status(200).json(allocations);
+  } catch (error) {
+    console.error("Error fetching allocations:", error.message);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { allocateRoom, getAllocations };

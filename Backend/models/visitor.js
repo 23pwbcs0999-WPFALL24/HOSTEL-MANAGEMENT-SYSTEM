@@ -1,5 +1,5 @@
 import sequelize from "../config/database.js";
-import DataTypes from "sequelize";
+import { DataTypes } from "sequelize";
 
 const Visitor = sequelize.define('Visitor', {
     visitor_id: {
@@ -14,7 +14,7 @@ const Visitor = sequelize.define('Visitor', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    relation:{
+    relation: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
@@ -23,7 +23,7 @@ const Visitor = sequelize.define('Visitor', {
         allowNull: false
     }
 }, {
-    tableName: "Visitors",
+    tableName: "visitors",
     timestamps: false
 });
 

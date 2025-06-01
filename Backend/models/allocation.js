@@ -1,5 +1,5 @@
 import sequelize from "../config/database.js";
-import DataTypes from "sequelize";
+import { DataTypes } from "sequelize";
 
 const Allocation = sequelize.define('Allocation', {
     allocation_id: {
@@ -18,7 +18,7 @@ const Allocation = sequelize.define('Allocation', {
     }
 }, {
     tableName: "allocations",
-    timestamp: false
+    timestamps: false
 });
 
 export default Allocation;

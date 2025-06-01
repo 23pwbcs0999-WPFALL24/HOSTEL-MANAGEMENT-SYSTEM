@@ -8,7 +8,8 @@ const Inventory = sequelize.define('Inventory', {
         autoIncrement: true
     },
     room_id: {
-        type:DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     item_name: {
         type: DataTypes.STRING(50),
@@ -23,7 +24,7 @@ const Inventory = sequelize.define('Inventory', {
         allowNull: true
     }
 }, {
-    tableName: "Inventories",
+    tableName: "inventories",
     timestamps: false
 });
 

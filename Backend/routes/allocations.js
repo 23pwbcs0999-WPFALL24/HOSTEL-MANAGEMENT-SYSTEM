@@ -1,8 +1,9 @@
-import express from "express";
-import allocateRoom from "../controllers/allocationController.js";
+ import express from "express";
+import { allocateRoom, getAllocations } from "../controllers/allocationController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/', allocateRoom);
+router.post("/", allocateRoom);
+router.get("/", getAllocations);
 
 export default router;

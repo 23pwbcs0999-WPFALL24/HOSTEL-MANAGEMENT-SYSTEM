@@ -1,5 +1,5 @@
 import sequelize from "../config/database.js";
-import DataTypes from "sequelize";
+import { DataTypes } from "sequelize";
 
 const Student = sequelize.define('Student', {
     student_id: {
@@ -18,13 +18,11 @@ const Student = sequelize.define('Student', {
     },
     cnic: {
         type: DataTypes.STRING(20),
-        allowNull: true,
-        unique: true
+        allowNull: true
     },
     phone_number: {
         type: DataTypes.STRING(11),
-        allowNull: false,
-        unique: true
+        allowNull: false
     },
     department: {
         type: DataTypes.STRING(20),
@@ -36,7 +34,7 @@ const Student = sequelize.define('Student', {
     }
 }, {
     tableName: "students",
-    timestamps: true
+    timestamps: false
 });
 
 export default Student;

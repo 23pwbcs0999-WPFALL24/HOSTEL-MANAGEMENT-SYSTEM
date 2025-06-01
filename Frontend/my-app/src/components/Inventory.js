@@ -5,6 +5,7 @@ const Inventory = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     room_id: '',
@@ -20,10 +21,11 @@ const Inventory = () => {
 
   const loadInventory = async () => {
     try {
-      const data = await fetchInventory();
+      const { data } = await fetchInventory();
       setItems(data);
     } catch (err) {
       setError('Failed to load inventory');
+      console.error("Load inventory error:", err);
     } finally {
       setLoading(false);
     }
@@ -35,25 +37,44 @@ const Inventory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { room_id, item_name, item_condition, last_checked_date } = form;
+    setIsSubmitting(true);
+    setFormError(null);
 
-    if (!room_id || !item_name || !item_condition || !last_checked_date) {
+    // Basic validation
+    if (!form.room_id || !form.item_name || !form.last_checked_date) {
       setFormError('All fields are required');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate room_id is positive number
+    if (isNaN(form.room_id)) {
+      setFormError('Room ID must be a number');
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const res = await addInventoryItem(form);
-      setItems([...items, res.item]);
+      // Format date to YYYY-MM-DD
+      const formattedDate = new Date(form.last_checked_date).toISOString().split('T')[0];
+      
+      const { data } = await addInventoryItem({
+        ...form,
+        last_checked_date: formattedDate
+      });
+
+      setItems([...items, data]);
       setForm({
         room_id: '',
         item_name: '',
         item_condition: 'Good',
         last_checked_date: ''
       });
-      setFormError(null);
     } catch (err) {
-      setFormError('Failed to add item. Please try again.');
+      console.error("Add item error:", err);
+      setFormError(err.response?.data?.error || 'Failed to add item. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -79,39 +100,66 @@ const Inventory = () => {
         <p>No inventory items available.</p>
       )}
 
-      {/* ✅ Always show the form */}
       <form className="form" onSubmit={handleSubmit} style={{ marginTop: '2rem' }}>
         <h3>Add New Inventory Item</h3>
         {formError && <p className="error">{formError}</p>}
-        <input
-          type="number"
-          name="room_id"
-          value={form.room_id}
-          onChange={handleChange}
-          placeholder="Room ID"
-          required
-        />
-        <input
-          type="text"
-          name="item_name"
-          value={form.item_name}
-          onChange={handleChange}
-          placeholder="Item Name"
-          required
-        />
-        <select name="item_condition" value={form.item_condition} onChange={handleChange}>
-          <option value="Good">Good</option>
-          <option value="Damaged">Damaged</option>
-          <option value="Need Repair">Need Repair</option>
-        </select>
-        <input
-          type="date"
-          name="last_checked_date"
-          value={form.last_checked_date}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Add Item</button>
+        
+        <div className="form-group">
+          <label htmlFor="room_id">Room ID</label>
+          <input
+            type="number"
+            id="room_id"
+            name="room_id"
+            min="1"
+            value={form.room_id}
+            onChange={handleChange}
+            placeholder="Room ID"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="item_name">Item Name</label>
+          <input
+            type="text"
+            id="item_name"
+            name="item_name"
+            value={form.item_name}
+            onChange={handleChange}
+            placeholder="Item Name"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="item_condition">Condition</label>
+          <select 
+            id="item_condition"
+            name="item_condition" 
+            value={form.item_condition} 
+            onChange={handleChange}
+          >
+            <option value="Good">Good</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Need Repair">Need Repair</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="last_checked_date">Last Checked Date</label>
+          <input
+            type="date"
+            id="last_checked_date"
+            name="last_checked_date"
+            value={form.last_checked_date}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Adding...' : 'Add Item'}
+        </button>
       </form>
     </section>
   );

@@ -1,7 +1,7 @@
 import sequelize from "../config/database.js";
-import DataTypes from "sequelize";
+import { DataTypes } from "sequelize";
 
-const Rooms = sequelize.define('Rooms',{
+const Room = sequelize.define('Room', {
     room_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -14,10 +14,11 @@ const Rooms = sequelize.define('Rooms',{
     floor: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }, 
+    },
     room_type: {
-        type: DataTypes.ENUM('1-Seater', '2-Seater')
-    }, 
+        type: DataTypes.ENUM('1-Seater', '2-Seater'),
+        allowNull: false
+    },
     current_occupancy: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -32,4 +33,4 @@ const Rooms = sequelize.define('Rooms',{
     timestamps: false
 });
 
-export default Rooms;
+export default Room;
