@@ -23,7 +23,7 @@ const Allocations = () => {
           fetchRooms(),
         ]);
 
-        setAllocations(allocRes || []); // <-- FIXED
+        setAllocations(allocRes || []); 
         setStudents(studRes || []);
         setRooms(
           (roomRes || []).filter((room) => room.current_occupancy < room.max_capacity)
@@ -46,8 +46,6 @@ const Allocations = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-
-    // Convert IDs to numbers
     const payload = {
       ...formData,
       student_id: Number(formData.student_id),

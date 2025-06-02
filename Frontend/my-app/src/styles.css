@@ -292,14 +292,7 @@ form.space-y-4 {
   max-width: 600px;
 }
 
-/* form input {
-  width: 100%;
-  padding: 0.6rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: var(--font-family);
-} */
+
 form input {
   width: 100%;
   padding: 0.6rem;
@@ -419,4 +412,96 @@ ul.list-disc li strong {
   margin: 0;
   color: var(--header-text-color);
   font-family: var(--font-family);
+}
+.page-section {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.room-form {
+  margin-bottom: 30px;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.room-form h3 {
+  flex-basis: 100%;
+  margin: 0 0 10px;
+}
+
+.room-form input,
+.room-form select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  flex: 1 1 150px;
+}
+
+.room-form button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.room-form button:hover {
+  background-color: #0056b3;
+}
+
+.rooms-container {
+  overflow-x: auto;
+}
+
+.rooms-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.rooms-table th,
+.rooms-table td {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.rooms-table th {
+  background-color: #f0f0f0;
+}
+
+.status-full {
+  background-color: #f44336;
+  color: white;
+  font-weight: bold;
+}
+
+.status-partial {
+  background-color: #ff9800;
+  color: white;
+  font-weight: bold;
+}
+
+.status-empty {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.loading {
+  color: #777;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
 }

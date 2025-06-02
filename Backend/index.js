@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import sequelize from "./config/database.js";
 
-// Use correct relations file
+
 import './models/relations.js';
 
 import students from "./routes/students.js";
@@ -35,7 +35,7 @@ const startServer = async () => {
         console.log("Database connection successful");
 
         if (process.env.NODE_ENV === "development") {
-            await sequelize.sync({ force: true }); // CAREFUL: deletes data
+            await sequelize.sync({ force: true }); 
             console.log("Tables dropped and recreated in development mode");
         } else {
             await sequelize.sync({ alter: true });

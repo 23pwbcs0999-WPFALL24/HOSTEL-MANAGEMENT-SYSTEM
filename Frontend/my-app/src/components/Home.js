@@ -1,18 +1,3 @@
-// import React from 'react';
-
-// const Home = () => {
-//   return (
-//     <section className="page-section">
-//       <h2>Welcome to the Room Allocation System</h2>
-//       <p>
-//         Manage rooms, students, allocations, inventory, and visitors efficiently using this system.
-//       </p>
-//       <p>Use the navigation links above to get started.</p>
-//     </section>
-//   );
-// };
-
-// export default Home;
 import React from 'react';
 
 const Home = () => {

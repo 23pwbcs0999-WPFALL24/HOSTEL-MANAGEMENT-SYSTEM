@@ -23,7 +23,7 @@ const Students = () => {
   async function loadStudents() {
     try {
       const data = await fetchStudents();
-      setStudents(data.students || data); // handle both raw array or wrapped response
+      setStudents(data.students || data);
     } catch (err) {
       setError('Failed to load students');
     } finally {
@@ -41,7 +41,6 @@ const Students = () => {
     setFormError(null);
     setFormSuccess(null);
 
-    // basic validation
     if (Object.values(form).some((val) => val.trim() === '')) {
       setFormError('All fields are required.');
       return;
@@ -66,39 +65,60 @@ const Students = () => {
 
   return (
     <section className="page-section">
-      <h2 className="text-xl font-bold mb-4">Students</h2>
+      <h2 className="text-xl font-bold mb-4">Student Management</h2>
 
+      {/* Student Form */}
+      <div className="student-form-container">
+        <form onSubmit={handleFormSubmit} className="student-form space-y-4">
+          <h3 className="text-lg font-semibold">Register New Student</h3>
+          {formError && <p className="text-red-600">{formError}</p>}
+          {formSuccess && <p className="text-green-600">{formSuccess}</p>}
+          <input name="student_name" placeholder="Full Name" value={form.student_name} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <input name="roll_number" placeholder="Roll Number" value={form.roll_number} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <input name="cnic" placeholder="CNIC" value={form.cnic} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <input name="phone_number" placeholder="Phone Number" value={form.phone_number} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <input name="department" placeholder="Department" value={form.department} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <input name="semester" placeholder="Semester" value={form.semester} onChange={handleInputChange} className="block w-full p-2 border rounded" />
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Student</button>
+        </form>
+      </div>
 
-<div className="student-form-container">
-  <form onSubmit={handleFormSubmit} className="student-form space-y-4">
-    <h3 className="text-lg font-semibold">Register New Student</h3>
-    {formError && <p className="text-red-600">{formError}</p>}
-    {formSuccess && <p className="text-green-600">{formSuccess}</p>}
-    <input name="student_name" placeholder="Full Name" value={form.student_name} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <input name="roll_number" placeholder="Roll Number" value={form.roll_number} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <input name="cnic" placeholder="CNIC" value={form.cnic} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <input name="phone_number" placeholder="Phone Number" value={form.phone_number} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <input name="department" placeholder="Department" value={form.department} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <input name="semester" placeholder="Semester" value={form.semester} onChange={handleInputChange} className="block w-full p-2 border rounded" />
-    <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Student</button>
-  </form>
-</div>
-
-      {/* List of Students */}
+      {/* Students Table */}
       {loading && <p>Loading students...</p>}
       {error && <p className="text-red-600">{error}</p>}
       {!loading && !error && (
-        <ul className="list-disc list-inside space-y-2">
+        <div className="students-container mt-6">
           {students.length === 0 ? (
-            <li>No students available.</li>
+            <p>No students registered.</p>
           ) : (
-            students.map((student) => (
-              <li key={student.student_id} className="border p-2 rounded">
-                <strong>{student.student_name}</strong> — Roll #: {student.roll_number}, CNIC: {student.cnic}, Phone: {student.phone_number}, Dept: {student.department}, Semester: {student.semester}
-              </li>
-            ))
+            <table className="rooms-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Full Name</th>
+                  <th>Roll #</th>
+                  <th>CNIC</th>
+                  <th>Phone</th>
+                  <th>Department</th>
+                  <th>Semester</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((student) => (
+                  <tr key={student.student_id}>
+                    <td>{student.student_id}</td>
+                    <td>{student.student_name}</td>
+                    <td>{student.roll_number}</td>
+                    <td>{student.cnic}</td>
+                    <td>{student.phone_number}</td>
+                    <td>{student.department}</td>
+                    <td>{student.semester}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-        </ul>
+        </div>
       )}
     </section>
   );
