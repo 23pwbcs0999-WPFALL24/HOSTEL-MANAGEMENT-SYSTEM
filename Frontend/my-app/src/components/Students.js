@@ -2,9 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { fetchStudents, createStudent } from '../api/api';
 
 const Students = () => {
+  // State for student list
   const [students, setStudents] = useState([]);
+  // State for loading indicator
   const [loading, setLoading] = useState(true);
+  // State for error messages
   const [error, setError] = useState(null);
+  // State for form inputs
   const [form, setForm] = useState({
     student_name: '',
     roll_number: '',
@@ -13,15 +17,20 @@ const Students = () => {
     department: '',
     semester: ''
   });
+  // State for form error and success messages
   const [formError, setFormError] = useState(null);
   const [formSuccess, setFormSuccess] = useState(null);
 
+  // Load students when component mounts
   useEffect(() => {
     loadStudents();
   }, []);
 
+  // Fetch all students from backend
   async function loadStudents() {
     try {
+      // Equivalent SQL:
+      // SELECT * FROM students
       const data = await fetchStudents();
       setStudents(data.students || data);
     } catch (err) {
@@ -31,24 +40,29 @@ const Students = () => {
     }
   }
 
+  // Handle input changes in the form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  // Handle form submission to add a new student
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
     setFormSuccess(null);
 
+    // Simple validation: check all fields are filled
     if (Object.values(form).some((val) => val.trim() === '')) {
       setFormError('All fields are required.');
       return;
     }
 
     try {
+      // Send new student data to backend
       const response = await createStudent(form);
       setFormSuccess(response.message || 'Student added successfully.');
+      // Reset form after success
       setForm({
         student_name: '',
         roll_number: '',
@@ -57,7 +71,7 @@ const Students = () => {
         department: '',
         semester: ''
       });
-      loadStudents();
+      loadStudents(); // Reload students list
     } catch (err) {
       setFormError(err.message || 'Failed to add student.');
     }
@@ -73,6 +87,7 @@ const Students = () => {
           <h3 className="text-lg font-semibold">Register New Student</h3>
           {formError && <p className="text-red-600">{formError}</p>}
           {formSuccess && <p className="text-green-600">{formSuccess}</p>}
+          {/* Input fields for student details */}
           <input name="student_name" placeholder="Full Name" value={form.student_name} onChange={handleInputChange} className="block w-full p-2 border rounded" />
           <input name="roll_number" placeholder="Roll Number" value={form.roll_number} onChange={handleInputChange} className="block w-full p-2 border rounded" />
           <input name="cnic" placeholder="CNIC" value={form.cnic} onChange={handleInputChange} className="block w-full p-2 border rounded" />
@@ -104,6 +119,7 @@ const Students = () => {
                 </tr>
               </thead>
               <tbody>
+                {/* Show each student in a table row */}
                 {students.map((student) => (
                   <tr key={student.student_id}>
                     <td>{student.student_id}</td>

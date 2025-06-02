@@ -54,8 +54,15 @@ export async function createAllocation(allocationData) {
 }
 
 // --- Inventory APIs ---
-export async function fetchInventory() {
-  return await fetchJson('/api/inventory');
+export async function fetchInventory(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.room_id) params.append('room_id', filters.room_id);
+  if (filters.item_condition) params.append('item_condition', filters.item_condition);
+  if (filters.from_date) params.append('from_date', filters.from_date);
+  if (filters.to_date) params.append('to_date', filters.to_date);
+
+  return await fetchJson('/api/inventory?' + params.toString());
 }
 
 export async function addInventoryItem(itemData) {

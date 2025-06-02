@@ -35,6 +35,8 @@ const createStudent = async (req, res) => {
 // Get all students
 const getAllStudents = async (req, res) => {
   try {
+    // Equivalent SQL:
+    // SELECT * FROM students
     const students = await student.findAll();
     return res.status(200).json(students);
   } catch (error) {
@@ -46,6 +48,9 @@ const getAllStudents = async (req, res) => {
 // Get unallocated students
 const getUnallocatedStudents = async (req, res) => {
   try {
+    // Equivalent SQL:
+    // SELECT * FROM students
+    // WHERE student_id NOT IN (SELECT student_id FROM allocations)
     const allocatedIds = await allocation.findAll({
       attributes: ["student_id"],
     });
@@ -55,7 +60,7 @@ const getUnallocatedStudents = async (req, res) => {
     const unallocatedStudents = await student.findAll({
       where: {
         student_id: {
-          [Op.notIn]: allocatedStudentIds.length ? allocatedStudentIds : [0], // fallback for empty
+          [Op.notIn]: allocatedStudentIds.length ? allocatedStudentIds : [0],
         },
       },
     });
@@ -72,5 +77,5 @@ const getUnallocatedStudents = async (req, res) => {
     });
   }
 };
-
 export { createStudent, getUnallocatedStudents, getAllStudents };
+

@@ -61,6 +61,10 @@ const allocateRoom = async (req, res) => {
 const getAllocations = async (req, res) => {
   try {
     const allocations = await Allocation.findAll({
+      // Equivalent SQL:
+      // SELECT * FROM allocations
+      // JOIN students ON allocations.student_id = students.student_id
+      // JOIN rooms ON allocations.room_id = rooms.room_id
       include: [
         {
           model: Student,

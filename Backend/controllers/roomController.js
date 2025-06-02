@@ -49,16 +49,17 @@ const createRoom = async (req, res) => {
 
 const getAvailableRooms = async (req, res) => {
   try {
+    // Equivalent SQL:
+    // SELECT * FROM rooms
+    // WHERE (room_type = '1-Seater' AND current_occupancy = 0)
+    //    OR (room_type = '2-Seater' AND current_occupancy < max_capacity)
     const availableRooms = await room.findAll({
       where: {
         [Op.or]: [
-          // 1-seater with zero occupancy
           {
             room_type: "1-Seater",
             current_occupancy: 0,
           },
-
-          // 2-Seater with available capacity
           {
             room_type: "2-Seater",
             current_occupancy: {
@@ -102,4 +103,26 @@ const getAllRooms = async (req, res) => {
   }
 };
 
-export { getAvailableRooms, createRoom, getAllRooms };
+const getEmptyRooms = async (req, res) => {
+  try {
+    // Equivalent SQL:
+    // SELECT * FROM rooms
+    // WHERE current_occupancy = 0
+    //   AND (block = ?)
+    //   AND (floor = ?)
+    //   AND (max_capacity = ?)
+    const { block, floor, occupancy } = req.query;
+    const where = { current_occupancy: 0 };
+    if (block) where.block = block;
+    if (floor) where.floor = floor;
+    if (occupancy) where.max_capacity = occupancy;
+
+    const emptyRooms = await room.findAll({ where });
+    return res.status(200).json(emptyRooms);
+  } catch (error) {
+    console.error("Failed to fetch empty rooms: ", error.message);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { getAvailableRooms, createRoom, getAllRooms, getEmptyRooms };

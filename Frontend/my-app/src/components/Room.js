@@ -14,6 +14,12 @@ const Rooms = () => {
     max_capacity: ''
   });
 
+  const [filter, setFilter] = useState({
+    block: '',
+    floor: '',
+    occupancy: '',
+  });
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -39,6 +45,21 @@ const Rooms = () => {
       setRooms(data);
     } catch (err) {
       setError('Failed to load rooms.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadEmptyRooms = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetch('http://localhost:5000/api/rooms/empty');
+      const rooms = await data.json();
+      setRooms(rooms);
+    } catch (err) {
+      setError('Failed to load empty rooms.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -76,6 +97,60 @@ const Rooms = () => {
         </select>
         <input type="number" name="max_capacity" placeholder="Max Capacity" value={formData.max_capacity} onChange={handleChange} required />
         <button type="submit">Add Room</button>
+      </form>
+
+      <button onClick={loadRooms}>Show All Rooms</button>
+      <button onClick={loadEmptyRooms} style={{ marginLeft: '1rem' }}>Show Empty Rooms</button>
+
+      {/* Filter Empty Rooms Form */}
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setLoading(true);
+          setError(null);
+          try {
+            // Build query string
+            const params = new URLSearchParams();
+            if (filter.block) params.append('block', filter.block);
+            if (filter.floor) params.append('floor', filter.floor);
+            if (filter.occupancy) params.append('occupancy', filter.occupancy);
+
+            const res = await fetch(`http://localhost:5000/api/rooms/empty?${params.toString()}`);
+            const data = await res.json();
+            setRooms(data);
+          } catch (err) {
+            setError('Failed to filter empty rooms.');
+            console.error(err);
+          } finally {
+            setLoading(false);
+          }
+        }}
+        className="room-filter-form"
+        style={{ margin: '1rem 0' }}
+      >
+        <h4>Filter Empty Rooms</h4>
+        <input
+          type="text"
+          placeholder="Block"
+          value={filter.block}
+          onChange={e => setFilter(f => ({ ...f, block: e.target.value }))}
+          style={{ marginRight: '0.5rem' }}
+        />
+        <input
+          type="number"
+          placeholder="Floor"
+          value={filter.floor}
+          onChange={e => setFilter(f => ({ ...f, floor: e.target.value }))}
+          style={{ marginRight: '0.5rem' }}
+        />
+        <input
+          type="number"
+          placeholder="Occupancy"
+          value={filter.occupancy}
+          onChange={e => setFilter(f => ({ ...f, occupancy: e.target.value }))}
+          style={{ marginRight: '0.5rem' }}
+        />
+        <button type="submit">Search Empty Rooms</button>
       </form>
 
       {loading && <p className="loading">Loading rooms...</p>}

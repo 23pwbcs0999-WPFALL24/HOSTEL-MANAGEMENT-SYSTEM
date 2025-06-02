@@ -1,30 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { fetchAllocations, fetchStudents, fetchRooms, createAllocation } from "../api/api";
 
+// Main component for managing room allocations
 const Allocations = () => {
+  // State for allocations, students, rooms, and form
   const [allocations, setAllocations] = useState([]);
   const [students, setStudents] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [formData, setFormData] = useState({
     student_id: "",
     room_id: "",
-    allocation_date: new Date().toISOString().split("T")[0], // Today
+    allocation_date: new Date().toISOString().split("T")[0], // Default to today
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  // Load allocations, students, and rooms when component mounts
   useEffect(() => {
     async function loadData() {
       try {
+        // Fetch all data in parallel
         const [allocRes, studRes, roomRes] = await Promise.all([
           fetchAllocations(),
           fetchStudents(),
           fetchRooms(),
         ]);
-
-        setAllocations(allocRes || []); 
+        setAllocations(allocRes || []);
         setStudents(studRes || []);
+        // Only show rooms that are not full
         setRooms(
           (roomRes || []).filter((room) => room.current_occupancy < room.max_capacity)
         );
@@ -37,11 +41,13 @@ const Allocations = () => {
     loadData();
   }, []);
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle allocation form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -55,7 +61,7 @@ const Allocations = () => {
     try {
       await createAllocation(payload);
       setSuccess("Room allocated successfully!");
-      // ...reload allocations, reset form, etc.
+      // You can reload allocations here if needed
     } catch (err) {
       setError("Failed to allocate room.");
     }
@@ -69,9 +75,11 @@ const Allocations = () => {
       {error && <p className="error">{error}</p>}
       {success && <p className="success">{success}</p>}
 
+      {/* Allocation Form */}
       <div className="allocation-form">
         <h3>Allocate Room</h3>
         <form onSubmit={handleSubmit}>
+          {/* Student Dropdown */}
           <div className="form-group">
             <label>Student:</label>
             <select
@@ -89,6 +97,7 @@ const Allocations = () => {
             </select>
           </div>
 
+          {/* Room Dropdown */}
           <div className="form-group">
             <label>Available Room:</label>
             <select
@@ -107,6 +116,7 @@ const Allocations = () => {
             </select>
           </div>
 
+          {/* Allocation Date */}
           <div className="form-group">
             <label>Allocation Date:</label>
             <input
@@ -124,6 +134,7 @@ const Allocations = () => {
         </form>
       </div>
 
+      {/* Allocations Table */}
       <div className="allocations-list">
         <h3>Current Allocations</h3>
         {allocations.length === 0 ? (
@@ -141,10 +152,12 @@ const Allocations = () => {
               {allocations.map((alloc) => (
                 <tr key={alloc.allocation_id}>
                   <td>
+                    {/* Show student name or ID */}
                     {students.find((s) => s.student_id === alloc.student_id)?.student_name ||
                       `Student ID: ${alloc.student_id}`}
                   </td>
                   <td>
+                    {/* Show room details or ID */}
                     {rooms.find((r) => r.room_id === alloc.room_id)
                       ? `${rooms.find((r) => r.room_id === alloc.room_id).block} - ${
                           rooms.find((r) => r.room_id === alloc.room_id).floor
@@ -158,6 +171,22 @@ const Allocations = () => {
           </table>
         )}
       </div>
+      {/* 
+        Corresponding backend query for allocations (in getAllocations controller):
+
+        // Equivalent SQL:
+        // SELECT * FROM allocations
+        // JOIN students ON allocations.student_id = students.student_id
+        // JOIN rooms ON allocations.room_id = rooms.room_id
+
+        // In Sequelize:
+        // Allocation.findAll({
+        //   include: [
+        //     { model: Student, attributes: [...] },
+        //     { model: Room, attributes: [...] }
+        //   ]
+        // })
+      */}
     </section>
   );
 };
