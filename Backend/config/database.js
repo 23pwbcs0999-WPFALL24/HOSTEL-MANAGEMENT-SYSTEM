@@ -34,6 +34,7 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: 'mysql',
+    port: process.env.DB_PORT, 
     logging: filterLogs,
     pool: {
       max: 10,
@@ -43,5 +44,6 @@ const sequelize = new Sequelize(
     }
   }
 );
+console.log("Connecting to DB:", process.env.DB_NAME, "@", process.env.DB_HOST);
 
 export default sequelize;

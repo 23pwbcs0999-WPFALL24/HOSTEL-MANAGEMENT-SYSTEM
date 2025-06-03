@@ -22,7 +22,6 @@ Visitor.belongsTo(Student, { foreignKey: 'student_id' }); // Visitor belongs to 
 Room.hasMany(Inventory, { foreignKey: 'room_id' }); // 1 Room -> Many Inventory items
 Inventory.belongsTo(Room, { foreignKey: 'room_id' }); // Inventory item belongs to 1 Room
 
-// Example (commented out): One-to-One: Each Warden can be assigned to one Room block
-// Warden.hasOne(Room, { foreignKey: 'block', sourceKey: 'block_assigned' });
+
 
 export { sequelize, Student, Room, Allocation, Visitor, Inventory };

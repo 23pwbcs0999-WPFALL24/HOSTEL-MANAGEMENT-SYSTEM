@@ -45,7 +45,7 @@ const Inventory = () => {
       //   (room_id = ?) AND
       //   (item_condition = ?) AND
       //   (last_checked_date BETWEEN ? AND ?)
-      // The actual WHERE clause depends on which filters are set.
+
       const { data } = await fetchInventory(filters);
       setItems(data);
     } catch (err) {
