@@ -47,3 +47,4 @@ const sequelize = new Sequelize(
 console.log("Connecting to DB:", process.env.DB_NAME, "@", process.env.DB_HOST);
 
 export default sequelize;
+// https://railway.com/project/6444f6c1-595f-426c-b399-2669f5a7ecf3/service/d0bb672c-7c17-49a7-947f-d5f647a95494/data?environmentId=4fe156f9-3d81-402a-9c89-246be594dd53
