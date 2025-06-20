@@ -114,8 +114,10 @@ const getEmptyRooms = async (req, res) => {
     const { block, floor, occupancy } = req.query;
     const where = { current_occupancy: 0 };
     if (block) where.block = block;
-    if (floor) where.floor = floor;
-    if (occupancy) where.max_capacity = occupancy;
+    if (floor) where.floor = parseInt(floor, 10);
+    if (occupancy) where.max_capacity = parseInt(occupancy, 10);
+
+    console.log("Searching for empty rooms with:", where);
 
     const emptyRooms = await room.findAll({ where });
     return res.status(200).json(emptyRooms);
