@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRooms, createRoom } from '../api/api';
+import { fetchRooms,createRoom } from '../api/api';
+
+const API_BASE = process.env.REACT_APP_API_BASE || '';
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -55,8 +57,8 @@ const Rooms = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetch('http://localhost:5000/api/rooms/empty');
-      const rooms = await data.json();
+      const res = await fetch(`${API_BASE}/api/rooms/empty`);
+      const rooms = await res.json();
       setRooms(rooms);
     } catch (err) {
       setError('Failed to load empty rooms.');
@@ -115,7 +117,7 @@ const Rooms = () => {
             if (filter.floor) params.append('floor', filter.floor);
             if (filter.occupancy) params.append('occupancy', filter.occupancy);
 
-            const res = await fetch(`http://localhost:5000/api/rooms/empty?${params.toString()}`);
+            const res = await fetch(`${API_BASE}/api/rooms/empty?${params.toString()}`);
             const data = await res.json();
             setRooms(data);
           } catch (err) {

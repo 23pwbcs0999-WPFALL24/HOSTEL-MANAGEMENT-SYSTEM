@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000'; // Backend server URL
+const API_BASE = process.env.REACT_APP_API_BASE || ''; // Use env variable or relative
 
 // Universal fetch helper with JSON parsing and error handling
 async function fetchJson(url, options = {}) {
