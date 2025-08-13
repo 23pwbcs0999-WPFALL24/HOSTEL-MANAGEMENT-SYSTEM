@@ -1,6 +1,6 @@
-const API_BASE = process.env.REACT_APP_API_BASE || ''; // Use env variable or relative
+const API_BASE = process.env.REACT_APP_API_BASE || ''; 
 
-// Universal fetch helper with JSON parsing and error handling
+
 async function fetchJson(url, options = {}) {
   const response = await fetch(API_BASE + url, options);
   if (!response.ok) {
