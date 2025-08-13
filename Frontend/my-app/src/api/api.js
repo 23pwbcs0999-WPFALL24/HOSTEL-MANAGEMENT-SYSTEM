@@ -1,8 +1,8 @@
-const API_BASE = process.env.REACT_APP_API_BASE || ''; 
+const API_BASE_URL = process.env.REACT_APP_API_BASE; 
 
 
 async function fetchJson(url, options = {}) {
-  const response = await fetch(API_BASE + url, options);
+  const response = await fetch(API_BASE_URL + url, options);
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
