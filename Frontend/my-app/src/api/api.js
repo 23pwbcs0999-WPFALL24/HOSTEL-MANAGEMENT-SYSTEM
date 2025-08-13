@@ -10,7 +10,7 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
-// --- Room APIs ---
+
 export async function fetchRooms() {
   return await fetchJson('/api/rooms');
 }
