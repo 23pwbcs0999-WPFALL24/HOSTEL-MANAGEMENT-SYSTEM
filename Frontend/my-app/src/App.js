@@ -11,9 +11,9 @@ import Visitors from './components/Visitors';
 
 const App = () => {
   return (
-    <>
+    <div className="app-shell">
       <Header />
-      <main className="app-container">
+      <main className="app-container page-wrap">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/room" element={<Rooms />} />
@@ -21,10 +21,18 @@ const App = () => {
           <Route path="/allocations" element={<Allocations />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/visitors" element={<Visitors />} />
-          <Route path="*" element={<h2>404 - Page Not Found</h2>} />
+          <Route
+            path="*"
+            element={(
+              <section className="page-section">
+                <h2>404 - Page Not Found</h2>
+                <p>This route does not exist. Please use the navigation bar to continue.</p>
+              </section>
+            )}
+          />
         </Routes>
       </main>
-    </>
+    </div>
   );
 };
 

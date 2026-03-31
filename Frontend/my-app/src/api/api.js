@@ -70,3 +70,11 @@ export async function addInventoryItem(itemData) {
 export async function fetchVisitors() {
   return await fetchJson('/api/visitors');
 }
+
+export async function createVisitor(visitorData) {
+  return await fetchJson('/api/visitors', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(visitorData)
+  });
+}
