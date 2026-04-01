@@ -53,6 +53,7 @@ const Visitors = () => {
     setSuccess('');
 
     const { student_id, visitor_name, relation, visit_date } = form;
+
     if (!student_id || !visitor_name.trim() || !relation.trim() || !visit_date) {
       setFormError('All fields are required.');
       return;
@@ -60,22 +61,16 @@ const Visitors = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await createVisitor({
+      await createVisitor({
         student_id: Number(student_id),
         visitor_name: visitor_name.trim(),
         relation: relation.trim(),
         visit_date
       });
 
-      const newVisitor = response?.visitor;
-      if (newVisitor) {
-        setVisitors((prev) => [newVisitor, ...prev]);
-      } else {
-        await loadData();
-      }
-
-      setSuccess(response?.message || 'Visitor added successfully.');
+      setSuccess('Visitor added successfully.');
       setForm(initialForm);
+      await loadData();
     } catch (err) {
       setFormError(err.message || 'Failed to add visitor.');
     } finally {

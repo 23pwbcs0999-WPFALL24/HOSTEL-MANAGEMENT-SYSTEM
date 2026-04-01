@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRooms, createRoom } from '../api/api';
+import { createRoom, fetchRooms } from '../api/api';
+
+const API_BASE = process.env.REACT_APP_API_BASE || '';
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -15,6 +17,48 @@ const Rooms = () => {
     floor: '',
     room_type: '1-Seater'
   });
+
+  const [filter, setFilter] = useState({
+    block: '',
+    floor: '',
+    occupancy: ''
+  });
+
+  const loadRooms = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchRooms();
+      setRooms(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (err) {
+      setError('Failed to load rooms.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadEmptyRooms = async (params = null) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const query = params ? `?${params.toString()}` : '';
+      const response = await fetch(`${API_BASE}/api/rooms/empty${query}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch empty rooms.');
+      }
+      const data = await response.json();
+      setRooms(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || 'Failed to load empty rooms.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRooms();
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -35,6 +79,7 @@ const Rooms = () => {
         floor: Number(formData.floor),
         room_type: formData.room_type
       });
+
       setFormData({ block: '', floor: '', room_type: '1-Seater' });
       setSubmitMessage('Room added successfully.');
       await loadRooms();
@@ -45,21 +90,16 @@ const Rooms = () => {
     }
   };
 
-  const loadRooms = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchRooms();
-      setRooms(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError('Failed to load rooms.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleEmptyFilterSubmit = async (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
 
-  useEffect(() => {
-    loadRooms();
-  }, []);
+    if (filter.block) params.append('block', filter.block);
+    if (filter.floor) params.append('floor', filter.floor);
+    if (filter.occupancy) params.append('occupancy', filter.occupancy);
+
+    await loadEmptyRooms(params);
+  };
 
   const getStatus = (occupancy, capacity) => {
     if (occupancy >= capacity) return 'Full';
@@ -134,6 +174,36 @@ const Rooms = () => {
         </aside>
 
         <div className="panel">
+          <div className="tools-row" style={{ marginBottom: '0.75rem' }}>
+            <button className="btn-ghost" onClick={loadRooms}>Show All Rooms</button>
+            <button className="btn-ghost" onClick={() => loadEmptyRooms()}>Show Empty Rooms</button>
+          </div>
+
+          <form onSubmit={handleEmptyFilterSubmit} className="tools-row" style={{ marginBottom: '0.75rem' }}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Filter empty by block"
+              value={filter.block}
+              onChange={(e) => setFilter((prev) => ({ ...prev, block: e.target.value }))}
+            />
+            <input
+              className="input"
+              type="number"
+              placeholder="Floor"
+              value={filter.floor}
+              onChange={(e) => setFilter((prev) => ({ ...prev, floor: e.target.value }))}
+            />
+            <input
+              className="input"
+              type="number"
+              placeholder="Occupancy"
+              value={filter.occupancy}
+              onChange={(e) => setFilter((prev) => ({ ...prev, occupancy: e.target.value }))}
+            />
+            <button className="btn-ghost" type="submit">Search Empty</button>
+          </form>
+
           <div className="tools-row">
             <input
               className="input"

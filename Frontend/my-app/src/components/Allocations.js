@@ -3,7 +3,6 @@ import {
   createAllocation,
   fetchAllocations,
   fetchRooms,
-  fetchStudents,
   fetchUnallocatedStudents
 } from '../api/api';
 
@@ -26,27 +25,18 @@ const Allocations = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allocRes, studRes, roomRes, unallocatedRes] = await Promise.all([
+      const [allocRes, studentRes, roomRes] = await Promise.all([
         fetchAllocations(),
-        fetchStudents(),
-        fetchRooms(),
-        fetchUnallocatedStudents()
+        fetchUnallocatedStudents(),
+        fetchRooms()
       ]);
 
-      const allStudents = Array.isArray(studRes) ? studRes : studRes.students || [];
-      const allRooms = Array.isArray(roomRes) ? roomRes : [];
-      const pendingStudents = Array.isArray(unallocatedRes?.students)
-        ? unallocatedRes.students
-        : Array.isArray(unallocatedRes)
-          ? unallocatedRes
-          : allStudents;
-
       setAllocations(Array.isArray(allocRes) ? allocRes : []);
-      setStudents(pendingStudents);
-      setRooms(allRooms);
+      setStudents(Array.isArray(studentRes) ? studentRes : []);
+      setRooms(Array.isArray(roomRes) ? roomRes : []);
       setError('');
     } catch (err) {
-      setError(err.message || 'Failed to load allocation data.');
+      setError(err.message || 'Failed to load data.');
     } finally {
       setLoading(false);
     }
@@ -70,6 +60,7 @@ const Allocations = () => {
 
   const studentMap = useMemo(() => {
     const map = {};
+
     students.forEach((student) => {
       map[student.student_id] = student;
     });
@@ -94,7 +85,7 @@ const Allocations = () => {
     setSuccess('');
 
     if (!formData.student_id || !formData.room_id || !formData.allocation_date) {
-      setError('Please complete all fields before allocating a room.');
+      setError('All fields are required.');
       return;
     }
 
@@ -107,7 +98,7 @@ const Allocations = () => {
       });
 
       setSuccess('Room allocated successfully.');
-      setFormData((prev) => ({ ...initialForm, allocation_date: prev.allocation_date }));
+      setFormData(initialForm);
       await loadData();
     } catch (err) {
       setError(err.message || 'Failed to allocate room.');
@@ -149,10 +140,17 @@ const Allocations = () => {
           {error && <p className="error">{error}</p>}
           {success && <p className="success">{success}</p>}
 
-          <form onSubmit={handleSubmit} className="form">
+          <form className="form" onSubmit={handleSubmit}>
             <div>
               <label className="label" htmlFor="student_id">Student</label>
-              <select id="student_id" className="select" name="student_id" value={formData.student_id} onChange={handleChange} required>
+              <select
+                id="student_id"
+                className="select"
+                name="student_id"
+                value={formData.student_id}
+                onChange={handleChange}
+                required
+              >
                 <option value="">Select Student</option>
                 {students.map((student) => (
                   <option key={student.student_id} value={student.student_id}>
@@ -164,11 +162,18 @@ const Allocations = () => {
 
             <div>
               <label className="label" htmlFor="room_id">Available Room</label>
-              <select id="room_id" className="select" name="room_id" value={formData.room_id} onChange={handleChange} required>
+              <select
+                id="room_id"
+                className="select"
+                name="room_id"
+                value={formData.room_id}
+                onChange={handleChange}
+                required
+              >
                 <option value="">Select Room</option>
                 {availableRooms.map((room) => (
                   <option key={room.room_id} value={room.room_id}>
-                    Block {room.block} | Floor {room.floor} | {room.room_type} ({room.current_occupancy}/{room.max_capacity})
+                    {room.block} - {room.floor} - {room.room_type} ({room.current_occupancy}/{room.max_capacity})
                   </option>
                 ))}
               </select>
@@ -187,7 +192,7 @@ const Allocations = () => {
               />
             </div>
 
-            <button className="btn-primary" type="submit" disabled={isSubmitting || students.length === 0 || availableRooms.length === 0}>
+            <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? 'Allocating...' : 'Allocate Room'}
             </button>
           </form>
@@ -195,35 +200,33 @@ const Allocations = () => {
 
         <div className="panel">
           {loading && <p className="notice">Loading allocations...</p>}
-
-          {!loading && allocations.length === 0 && (
+          {!loading && !error && allocations.length === 0 && (
             <div className="empty-state">
-              <p>No allocations recorded yet.</p>
+              <p>No allocations available.</p>
             </div>
           )}
 
-          {!loading && allocations.length > 0 && (
+          {!loading && !error && allocations.length > 0 && (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Allocation ID</th>
                     <th>Student</th>
                     <th>Room</th>
-                    <th>Date</th>
+                    <th>Allocation Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allocations.map((allocation) => {
-                    const room = roomMap[allocation.room_id] || allocation.Room;
-                    const student = studentMap[allocation.student_id] || allocation.Student;
+                    const student = studentMap[allocation.student_id];
+                    const room = roomMap[allocation.room_id];
+
                     return (
                       <tr key={allocation.allocation_id}>
-                        <td>{allocation.allocation_id}</td>
-                        <td>{student?.student_name || `Student #${allocation.student_id}`}</td>
+                        <td>{student ? student.student_name : `Student #${allocation.student_id}`}</td>
                         <td>
                           {room
-                            ? `Block ${room.block || '-'} | Floor ${room.floor || '-'} | ${room.room_type || `Room #${allocation.room_id}`}`
+                            ? `${room.block} - ${room.floor} - ${room.room_type}`
                             : `Room #${allocation.room_id}`}
                         </td>
                         <td>{new Date(allocation.allocation_date).toLocaleDateString()}</td>

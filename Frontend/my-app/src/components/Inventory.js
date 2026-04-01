@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addInventoryItem, fetchInventory, fetchRooms } from '../api/api';
 
 const initialForm = {
@@ -6,6 +6,13 @@ const initialForm = {
   item_name: '',
   item_condition: 'Good',
   last_checked_date: new Date().toISOString().split('T')[0]
+};
+
+const initialFilters = {
+  room_id: '',
+  item_condition: '',
+  from_date: '',
+  to_date: ''
 };
 
 const Inventory = () => {
@@ -18,12 +25,24 @@ const Inventory = () => {
   const [formError, setFormError] = useState('');
   const [success, setSuccess] = useState('');
   const [conditionFilter, setConditionFilter] = useState('All');
+  const [filterInputs, setFilterInputs] = useState(initialFilters);
+  const [filters, setFilters] = useState(initialFilters);
 
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     setLoading(true);
     try {
-      const [inventoryResponse, roomResponse] = await Promise.all([fetchInventory(), fetchRooms()]);
-      setItems(Array.isArray(inventoryResponse?.data) ? inventoryResponse.data : []);
+      const [inventoryResponse, roomResponse] = await Promise.all([
+        fetchInventory(filters),
+        fetchRooms()
+      ]);
+
+      const normalizedItems = Array.isArray(inventoryResponse)
+        ? inventoryResponse
+        : Array.isArray(inventoryResponse?.data)
+          ? inventoryResponse.data
+          : [];
+
+      setItems(normalizedItems);
       setRooms(Array.isArray(roomResponse) ? roomResponse : []);
       setError('');
     } catch (err) {
@@ -31,11 +50,11 @@ const Inventory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     loadInventory();
-  }, []);
+  }, [loadInventory]);
 
   const roomOptions = useMemo(() => {
     return rooms.map((room) => ({
@@ -44,15 +63,30 @@ const Inventory = () => {
     }));
   }, [rooms]);
 
-  const filteredItems = useMemo(() => {
+  const displayedItems = useMemo(() => {
     if (conditionFilter === 'All') {
       return items;
     }
+
     return items.filter((item) => item.item_condition === conditionFilter);
   }, [conditionFilter, items]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleFilterChange = (e) => {
+    setFilterInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(filterInputs);
+  };
+
+  const clearFilters = () => {
+    setFilterInputs(initialFilters);
+    setFilters(initialFilters);
+    setConditionFilter('All');
   };
 
   const handleSubmit = async (e) => {
@@ -67,22 +101,16 @@ const Inventory = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await addInventoryItem({
+      await addInventoryItem({
         room_id: Number(form.room_id),
         item_name: form.item_name.trim(),
         item_condition: form.item_condition,
         last_checked_date: form.last_checked_date
       });
 
-      const createdItem = response?.data;
-      if (createdItem) {
-        setItems((prev) => [createdItem, ...prev]);
-      } else {
-        await loadInventory();
-      }
-
       setSuccess('Inventory item added successfully.');
       setForm(initialForm);
+      await loadInventory();
     } catch (err) {
       setFormError(err.message || 'Failed to add item.');
     } finally {
@@ -99,7 +127,7 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="panel-grid">
+      <div className="panel-grid" style={{ marginTop: '1rem' }}>
         <aside className="panel">
           <h3>Add Inventory Item</h3>
           {formError && <p className="error">{formError}</p>}
@@ -151,9 +179,30 @@ const Inventory = () => {
         </aside>
 
         <div className="panel">
-          <div className="tools-row">
+          <div className="tools-row" style={{ marginBottom: '0.75rem' }}>
+            <input
+              className="input"
+              type="number"
+              name="room_id"
+              placeholder="Filter by Room ID"
+              value={filterInputs.room_id}
+              onChange={handleFilterChange}
+            />
+            <select className="select" name="item_condition" value={filterInputs.item_condition} onChange={handleFilterChange}>
+              <option value="">All Conditions</option>
+              <option value="Good">Good</option>
+              <option value="Damaged">Damaged</option>
+              <option value="Need Repair">Need Repair</option>
+            </select>
+            <input className="input" type="date" name="from_date" value={filterInputs.from_date} onChange={handleFilterChange} />
+            <input className="input" type="date" name="to_date" value={filterInputs.to_date} onChange={handleFilterChange} />
+            <button type="button" className="btn-ghost" onClick={applyFilters}>Apply</button>
+            <button type="button" className="btn-ghost" onClick={clearFilters}>Clear</button>
+          </div>
+
+          <div className="tools-row" style={{ marginBottom: '0.75rem' }}>
             <select className="select" value={conditionFilter} onChange={(e) => setConditionFilter(e.target.value)}>
-              <option value="All">All Conditions</option>
+              <option value="All">All Conditions (Local)</option>
               <option value="Good">Good</option>
               <option value="Damaged">Damaged</option>
               <option value="Need Repair">Need Repair</option>
@@ -163,13 +212,13 @@ const Inventory = () => {
           {loading && <p className="notice">Loading inventory...</p>}
           {!loading && error && <p className="error">{error}</p>}
 
-          {!loading && !error && filteredItems.length === 0 && (
+          {!loading && !error && displayedItems.length === 0 && (
             <div className="empty-state">
               <p>No inventory items match this filter.</p>
             </div>
           )}
 
-          {!loading && !error && filteredItems.length > 0 && (
+          {!loading && !error && displayedItems.length > 0 && (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
@@ -181,7 +230,7 @@ const Inventory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredItems.map((item) => (
+                  {displayedItems.map((item) => (
                     <tr key={item.item_id}>
                       <td>{item.item_name}</td>
                       <td>

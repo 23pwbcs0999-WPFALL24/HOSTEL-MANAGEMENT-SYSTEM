@@ -1,0 +1,7 @@
+# .gitignore for Backend
+
+node_modules/
+.env
+sequelize.log
+npm-debug.log
+.DS_Store

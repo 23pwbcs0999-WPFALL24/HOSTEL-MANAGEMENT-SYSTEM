@@ -21,10 +21,6 @@ const Students = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
 
-  useEffect(() => {
-    loadStudents();
-  }, []);
-
   const loadStudents = async () => {
     setLoading(true);
     try {
@@ -37,6 +33,10 @@ const Students = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadStudents();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

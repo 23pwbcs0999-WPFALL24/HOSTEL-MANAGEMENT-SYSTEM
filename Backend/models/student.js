@@ -17,7 +17,7 @@ const Student = sequelize.define('Student', {
         unique: true
     },
     cnic: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(64), 
         allowNull: true
     },
     phone_number: {
