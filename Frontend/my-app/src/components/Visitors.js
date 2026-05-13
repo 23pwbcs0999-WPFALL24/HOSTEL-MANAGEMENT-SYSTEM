@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { createVisitor, fetchStudents, fetchVisitors } from '../api/api';
+import { createVisitor, fetchStudents, fetchVisitors, deleteVisitor } from '../api/api';
 
 const initialForm = {
   student_id: '',
@@ -17,6 +17,7 @@ const Visitors = () => {
   const [formError, setFormError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -78,8 +79,27 @@ const Visitors = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    try { await deleteVisitor(confirmDelete.id); setSuccess(`Visitor "${confirmDelete.name}" deleted.`); await loadData(); }
+    catch (err) { setError(err.message || 'Failed to delete visitor.'); }
+    finally { setConfirmDelete(null); }
+  };
+
   return (
     <section className="page-section">
+      {confirmDelete && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3 className="modal-title">Confirm Delete</h3>
+            <p className="modal-body">Delete visitor <strong>{confirmDelete.name}</strong>? This cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn-muted" onClick={() => setConfirmDelete(null)}>Cancel</button>
+              <button className="btn-danger" onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="page-head">
         <div>
           <h2 className="page-title">Visitor Management</h2>
@@ -142,20 +162,20 @@ const Visitors = () => {
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr>
-                    <th>Visitor Name</th>
-                    <th>Student</th>
-                    <th>Relation</th>
-                    <th>Visit Date</th>
-                  </tr>
+                  <tr><th>Visitor Name</th><th>Student</th><th>Relation</th><th>Visit Date</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                   {visitors.map((visitor) => (
                     <tr key={visitor.visitor_id}>
-                      <td>{visitor.visitor_name}</td>
+                      <td><strong>{visitor.visitor_name}</strong></td>
                       <td>{studentMap[visitor.student_id] || `Student #${visitor.student_id}`}</td>
                       <td>{visitor.relation}</td>
                       <td>{new Date(visitor.visit_date).toLocaleDateString()}</td>
+                      <td>
+                        <div className="action-btns">
+                          <button className="btn-icon btn-del" title="Delete" onClick={() => setConfirmDelete({ id: visitor.visitor_id, name: visitor.visitor_name })}>🗑️</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

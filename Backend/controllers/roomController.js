@@ -127,4 +127,37 @@ const getEmptyRooms = async (req, res) => {
   }
 };
 
-export { getAvailableRooms, createRoom, getAllRooms, getEmptyRooms };
+const deleteRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const foundRoom = await room.findByPk(id);
+    if (!foundRoom) return res.status(404).json({ error: 'Room not found' });
+    if (foundRoom.current_occupancy > 0)
+      return res.status(400).json({ error: 'Cannot delete a room that has occupants. Remove allocations first.' });
+    await foundRoom.destroy();
+    return res.status(200).json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    console.error('Failed to delete room:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const updateRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { block, floor, room_type } = req.body;
+    const foundRoom = await room.findByPk(id);
+    if (!foundRoom) return res.status(404).json({ error: 'Room not found' });
+    let max_capacity = foundRoom.max_capacity;
+    if (room_type) {
+      max_capacity = room_type === '1-Seater' ? 1 : room_type === '2-Seater' ? 2 : max_capacity;
+    }
+    await foundRoom.update({ block: block || foundRoom.block, floor: floor ?? foundRoom.floor, room_type: room_type || foundRoom.room_type, max_capacity });
+    return res.status(200).json({ message: 'Room updated successfully', room: foundRoom });
+  } catch (error) {
+    console.error('Failed to update room:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export { getAvailableRooms, createRoom, getAllRooms, getEmptyRooms, deleteRoom, updateRoom };

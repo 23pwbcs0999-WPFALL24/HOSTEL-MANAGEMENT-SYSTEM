@@ -46,7 +46,10 @@ const startServer = async () => {
             console.log(`Server running at http://localhost:${PORT}`);
         });
     } catch (error) {
-        console.error("Failed to connect or sync:", error.message);
+        console.error("Failed to connect or sync:");
+        console.error("  Message:", error.message);
+        console.error("  Code:", error.original?.code);
+        console.error("  Details:", error.original?.sqlMessage || error.original?.address || '');
         process.exit(1);
     }
 };

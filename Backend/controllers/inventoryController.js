@@ -110,3 +110,34 @@ export const getInventory = async (req, res) => {
         });
     }
 };
+
+export const deleteInventoryItem = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await Inventory.findByPk(id);
+        if (!item) return res.status(404).json({ success: false, error: 'Inventory item not found' });
+        await item.destroy();
+        return res.status(200).json({ success: true, message: 'Inventory item deleted successfully' });
+    } catch (error) {
+        console.error('Delete inventory error:', error.message);
+        return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+};
+
+export const updateInventoryItem = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await Inventory.findByPk(id);
+        if (!item) return res.status(404).json({ success: false, error: 'Inventory item not found' });
+        const { item_name, item_condition, last_checked_date } = req.body;
+        await item.update({
+            item_name: item_name || item.item_name,
+            item_condition: item_condition || item.item_condition,
+            last_checked_date: last_checked_date ? new Date(last_checked_date) : item.last_checked_date
+        });
+        return res.status(200).json({ success: true, message: 'Inventory item updated successfully', data: item });
+    } catch (error) {
+        console.error('Update inventory error:', error.message);
+        return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+};

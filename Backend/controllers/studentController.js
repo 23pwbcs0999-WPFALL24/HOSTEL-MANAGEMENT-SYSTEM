@@ -77,5 +77,33 @@ const getUnallocatedStudents = async (req, res) => {
     });
   }
 };
-export { createStudent, getUnallocatedStudents, getAllStudents };
+const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const foundStudent = await student.findByPk(id);
+    if (!foundStudent) return res.status(404).json({ error: 'Student not found' });
+    const hasAllocation = await allocation.findOne({ where: { student_id: id } });
+    if (hasAllocation) return res.status(400).json({ error: 'Cannot delete student with an active room allocation. Remove the allocation first.' });
+    await foundStudent.destroy();
+    return res.status(200).json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting student:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
+const updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const foundStudent = await student.findByPk(id);
+    if (!foundStudent) return res.status(404).json({ error: 'Student not found' });
+    const { student_name, roll_number, cnic, phone_number, department, semester } = req.body;
+    await foundStudent.update({ student_name, roll_number, cnic, phone_number, department, semester });
+    return res.status(200).json({ message: 'Student updated successfully', student: foundStudent });
+  } catch (error) {
+    console.error('Error updating student:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export { createStudent, getUnallocatedStudents, getAllStudents, deleteStudent, updateStudent };

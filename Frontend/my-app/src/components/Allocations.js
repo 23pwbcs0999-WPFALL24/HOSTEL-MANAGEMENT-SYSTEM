@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   createAllocation,
+  deleteAllocation,
   fetchAllocations,
   fetchRooms,
   fetchUnallocatedStudents
@@ -21,6 +22,7 @@ const Allocations = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -102,13 +104,30 @@ const Allocations = () => {
       await loadData();
     } catch (err) {
       setError(err.message || 'Failed to allocate room.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    } finally { setIsSubmitting(false); }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    try { await deleteAllocation(confirmDelete.id); setSuccess('Allocation removed. Room occupancy updated.'); await loadData(); }
+    catch (err) { setError(err.message || 'Failed to remove allocation.'); }
+    finally { setConfirmDelete(null); }
   };
 
   return (
     <section className="page-section">
+      {confirmDelete && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3 className="modal-title">Remove Allocation</h3>
+            <p className="modal-body">Remove allocation <strong>#{confirmDelete.id}</strong>? The room occupancy will be decremented automatically.</p>
+            <div className="modal-actions">
+              <button className="btn-muted" onClick={() => setConfirmDelete(null)}>Cancel</button>
+              <button className="btn-danger" onClick={handleDelete}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="page-head">
         <div>
           <h2 className="page-title">Room Allocations</h2>
@@ -210,26 +229,22 @@ const Allocations = () => {
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Room</th>
-                    <th>Allocation Date</th>
-                  </tr>
+                  <tr><th>Student</th><th>Room</th><th>Date</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                   {allocations.map((allocation) => {
-                    const student = studentMap[allocation.student_id];
-                    const room = roomMap[allocation.room_id];
-
+                    const s = studentMap[allocation.student_id];
+                    const r = roomMap[allocation.room_id];
                     return (
                       <tr key={allocation.allocation_id}>
-                        <td>{student ? student.student_name : `Student #${allocation.student_id}`}</td>
-                        <td>
-                          {room
-                            ? `${room.block} - ${room.floor} - ${room.room_type}`
-                            : `Room #${allocation.room_id}`}
-                        </td>
+                        <td><strong>{s ? s.student_name : allocation.Student?.student_name || `#${allocation.student_id}`}</strong></td>
+                        <td>{r ? `Block ${r.block} · Floor ${r.floor} · ${r.room_type}` : `Room #${allocation.room_id}`}</td>
                         <td>{new Date(allocation.allocation_date).toLocaleDateString()}</td>
+                        <td>
+                          <div className="action-btns">
+                            <button className="btn-icon btn-del" title="Remove" onClick={() => setConfirmDelete({ id: allocation.allocation_id })}>🗑️</button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}

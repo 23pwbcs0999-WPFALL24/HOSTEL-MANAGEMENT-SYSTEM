@@ -1,11 +1,13 @@
 import express from "express";
-import { createRoom, getAvailableRooms, getAllRooms, getEmptyRooms } from "../controllers/roomController.js";
+import { createRoom, getAvailableRooms, getAllRooms, getEmptyRooms, deleteRoom, updateRoom } from "../controllers/roomController.js";
 
 const router = express.Router();
 
-router.post('/', createRoom);
+router.get('/', getAllRooms);
 router.get('/available', getAvailableRooms);
 router.get('/empty', getEmptyRooms);
-router.get('/', getAllRooms); 
+router.post('/', createRoom);
+router.put('/:id', updateRoom);
+router.delete('/:id', deleteRoom);
 
 export default router;

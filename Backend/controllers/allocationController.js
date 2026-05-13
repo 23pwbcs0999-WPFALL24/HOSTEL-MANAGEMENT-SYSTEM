@@ -84,4 +84,22 @@ const getAllocations = async (req, res) => {
   }
 };
 
-export { allocateRoom, getAllocations };
+const deleteAllocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const alloc = await Allocation.findByPk(id);
+    if (!alloc) return res.status(404).json({ error: 'Allocation not found' });
+    // Decrement room occupancy
+    const room = await Room.findByPk(alloc.room_id);
+    if (room && room.current_occupancy > 0) {
+      await Room.update({ current_occupancy: room.current_occupancy - 1 }, { where: { room_id: alloc.room_id } });
+    }
+    await alloc.destroy();
+    return res.status(200).json({ message: 'Allocation removed successfully' });
+  } catch (error) {
+    console.error('Error deleting allocation:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export { allocateRoom, getAllocations, deleteAllocation };
